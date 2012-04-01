@@ -1,0 +1,7 @@
+target/
+.settings/
+test-inputs/
+/db
+.cache
+.classpath
+.project
