@@ -1,4 +1,4 @@
-name := "JavaParser"
+name := "JavaAnalyzer"
 
 version := "1.0"
 
