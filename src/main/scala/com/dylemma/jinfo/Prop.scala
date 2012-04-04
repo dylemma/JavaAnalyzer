@@ -1,5 +1,7 @@
 package com.dylemma.jinfo
+
 import org.neo4j.graphdb.PropertyContainer
+
 import com.dylemma.jinfo.Prop.NeoTypeEvidence
 
 object Prop {
@@ -13,6 +15,9 @@ object Prop {
 	val lineStart = Prop[Int]("lineStart")
 	val lineEnd = Prop[Int]("lineEnd")
 	val modifiers = Prop[Int]("modifiers")
+	val kind = Prop[String]("nodeKind")
+	val inferred = Prop[Boolean]("isInferred")
+	val javadoc = Prop[String]("javadoc")
 }
 
 case class Prop[A](pname: String)(implicit e: NeoTypeEvidence[A]) {

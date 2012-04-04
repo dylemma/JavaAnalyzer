@@ -6,39 +6,46 @@ import scala.collection.JavaConversions._
 import java.lang.reflect.Modifier
 import japa.parser.ast.body.MethodDeclaration
 import japa.parser.ast.body.ConstructorDeclaration
+import japa.parser.ast.ImportDeclaration
+import japa.parser.ast.expr.NameExpr
 
-object TestyTime {
+object TestyTime extends App {
 
-	val geotoolsRoot = Path("test-inputs", "geotools", "modules", "library")
+	val name = new NameExpr("com.dylan.stuff.Things")
+	println(name.getName)
 
-	val paths = geotoolsRoot ** { p: Path =>
-		p.extension == Some("java")
-	}
+	println(new ImportDeclaration(new NameExpr("com.dylan.stuff"), true, true))
 
-	//	for (p <- paths) println(p.relativize(geotoolsRoot))
-
-	println("Found " + paths.size + " paths")
-
-	val parsed = paths.head.inputStream.acquireFor { in =>
-		JavaParser.parse(in)
-	}
-
-	parsed match {
-		case Left(errors) => errors foreach println
-		case Right(cu) =>
-			println(cu)
-			//			println(cu.getPackage.getName)
-			for (t <- cu.getTypes) {
-				println(t.getName)
-				println(t.getModifiers)
-				t.getMembers map {
-					case c: ConstructorDeclaration =>
-						println("Constructor, params = " + c.getParameters.toList)
-					case m: MethodDeclaration =>
-						println("Method: " + m.getName + " + params(" + m.getParameters + ") + returns " + m.getType)
-					case _ =>
-				}
-			}
-	}
+	//	val geotoolsRoot = Path("test-inputs", "geotools", "modules", "library")
+	//
+	//	val paths = geotoolsRoot ** { p: Path =>
+	//		p.extension == Some("java")
+	//	}
+	//
+	//	//	for (p <- paths) println(p.relativize(geotoolsRoot))
+	//
+	//	println("Found " + paths.size + " paths")
+	//
+	//	val parsed = paths.head.inputStream.acquireFor { in =>
+	//		JavaParser.parse(in)
+	//	}
+	//
+	//	parsed match {
+	//		case Left(errors) => errors foreach println
+	//		case Right(cu) =>
+	//			println(cu)
+	//			//			println(cu.getPackage.getName)
+	//			for (t <- cu.getTypes) {
+	//				println(t.getName)
+	//				println(t.getModifiers)
+	//				t.getMembers map {
+	//					case c: ConstructorDeclaration =>
+	//						println("Constructor, params = " + c.getParameters.toList)
+	//					case m: MethodDeclaration =>
+	//						println("Method: " + m.getName + " + params(" + m.getParameters + ") + returns " + m.getType)
+	//					case _ =>
+	//				}
+	//			}
+	//	}
 
 }

@@ -10,7 +10,7 @@ object DBTest extends App {
 
 	val db = DB("db/dbtest")
 	val geotoolsRoot = Path("test-inputs", "geotools", "modules", "library")
-	val geotoolsSmallSubset = geotoolsRoot / "api" / "src" / "main" / "java" / "org" / "geotools" / "filter" / "expression"
+	val geotoolsSmallSubset = geotoolsRoot // "api" / "src" / "main" / "java" / "org" / "geotools" // "filter" / "expression"
 
 	val analysisNode = AnalysisNode.fromDB(db)
 	val analyzer = new Analyzer(geotoolsSmallSubset)
@@ -36,7 +36,7 @@ object DBTest extends App {
 		}
 
 		println("\nPACKAGE HIERARCHY:")
-		printHierarchies(analysisNode.defaultPackage, 0, PackageHierarchy, PackageToClass)
+		printHierarchies(analysisNode.defaultPackage, 0, PackageHierarchy, PackageToClass, ClassToInnerClass)
 
 		println("\nFILE HIERARCHY:")
 		printHierarchy(analysisNode.defaultFile, FileHierarchy)

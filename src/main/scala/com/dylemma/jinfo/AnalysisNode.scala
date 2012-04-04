@@ -11,6 +11,7 @@ case class AnalysisNode(node: Node) {
 
 	def defaultPackage = hierarchicalRoot(PackageHierarchy)(_.setProperty("name", ""))
 	def defaultFile = hierarchicalRoot(FileHierarchy)(_.setProperty("name", ""))
+	def defaultImportPackage = hierarchicalRoot(ImportHierarchy)(_.setProperty("name", ""))
 
 	def hierarchicalRoot(relType: RelationshipType)(init: Node => Unit): Node =
 		node.getSingleRelationship(relType, Direction.OUTGOING) match {
@@ -32,7 +33,7 @@ case class AnalysisNode(node: Node) {
 	  */
 	def pkg(fullName: String, createIfMissing: Boolean = true) = {
 		val nameParts = if (fullName.isEmpty) Nil else fullName.split("\\.").toList
-		nodeFromPath(defaultPackage, nameParts, PackageHierarchy, createIfMissing)(name => graph.createNode)
+		nodeFromPath(defaultPackage, nameParts, PackageHierarchy, createIfMissing)
 	}
 
 	def typeNode(name: String, pkgDec: PackageDeclaration, createIfMissing: Boolean): Option[Node] = {
@@ -42,30 +43,32 @@ case class AnalysisNode(node: Node) {
 	def typeNode(name: String, pkgName: String, createIfMissing: Boolean = true): Option[Node] = {
 		val pkgNode = pkg(pkgName, createIfMissing)
 		pkgNode flatMap { p =>
-			nodeFromPath(p, List(name), PackageToClass, createIfMissing)(name => graph.createNode)
+			nodeFromPath(p, List(name), PackageToClass, createIfMissing)
 		}
 	}
 
 	def file(path: Path, createIfMissing: Boolean = true) = {
-		nodeFromPath(defaultFile, path.segments.toList, FileHierarchy, createIfMissing)(name => graph.createNode)
+		nodeFromPath(defaultFile, path.segments.toList, FileHierarchy, createIfMissing)
+	}
+
+	def importNode(name: String, createIfMissing: Boolean = true) = {
+		nodeFromPath(defaultImportPackage, name.split('.').toList, ImportHierarchy, createIfMissing)
 	}
 
 	def nodeFromPath(start: Node, path: List[String], relType: RelationshipType, createIfMissing: Boolean = true,
-		direction: Direction = Direction.OUTGOING,
-		nameProp: String = "name")(
-			create: String => Node) = {
+		nameProp: String = "name") = {
 
 		def followPath(from: Node, p: List[String]): Option[Node] = p match {
 			case Nil => Some(from)
 			case head :: tail =>
-				val nextNode = from.getRelationships(relType, direction).find {
+				val nextNode = from.getRelationships(relType, Direction.OUTGOING).find {
 					case edge => edge.getEndNode.getProperty(nameProp) == head
 				}
 				nextNode match {
 					case None if !createIfMissing => None
 					case Some(edge) => followPath(edge.getEndNode, tail)
 					case None =>
-						val next = create(head)
+						val next = graph.createNode //create(head)
 						next.setProperty(nameProp, head)
 						from.createRelationshipTo(next, relType)
 						followPath(next, tail)
@@ -73,6 +76,23 @@ case class AnalysisNode(node: Node) {
 		}
 
 		followPath(start, path)
+	}
+
+	def lookupNode(start: Node, path: List[String], relTypes: Seq[RelationshipType],
+		nameProp: String = "name"): Option[Node] = {
+
+		path match {
+			case Nil => Some(start)
+			case head :: tail =>
+				val nextEdge = start.getRelationships(Direction.OUTGOING, relTypes: _*).find {
+					case edge => edge.getEndNode.getProperty(nameProp) == head
+				}
+				nextEdge match {
+					case None => None
+					case Some(edge) => lookupNode(edge.getEndNode, tail, relTypes, nameProp)
+				}
+		}
+
 	}
 
 }
